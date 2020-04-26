@@ -1,0 +1,146 @@
+Component - D Flip - Flop
+-------------------------
+library IEEE;  
+use IEEE.STD_LOGIC_1164.ALL;  
+  
+entity D_FF is  
+ 
+    Port ( D : in STD_LOGIC;  
+           CLK : in STD_LOGIC;  
+           RESET : in STD_LOGIC;  
+           Q : out STD_LOGIC);  
+end D_FF;  
+
+architecture behavioral of D_FF is  
+ 
+begin  
+ 
+process(RESET,CLK)  
+begin  
+
+    if (RESET = '1') then  
+        Q <= '0';  
+             
+    elsif (CLK'event and CLK = '1')then  
+        Q <= D ;  
+             
+end if;  
+end process; 
+  
+end behavioral;
+----------------------------------------------------------------------------------------------------------------------------------------
+
+Main Code
+---------
+library IEEE;  
+use IEEE.STD_LOGIC_1164.ALL;  
+
+entity RingC_4bit is  
+ 
+    Port ( CLK : in STD_LOGIC;  
+           RESET : in STD_LOGIC;  
+           OUTPUT : out STD_LOGIC_VECTOR (3 downto 0));  
+end RingC_4bit;  
+
+architecture RingC of RingC_4bit is  
+ 
+component D_FF
+  
+    Port ( CLK : in STD_LOGIC;  
+           RESET : in STD_LOGIC;  
+           D : in STD_LOGIC;  
+           Q : out STD_LOGIC);  
+end component;
+  
+signal temp : STD_LOGIC_VECTOR (3 downto 0) := "0001";  
+signal RESET_D : STD_LOGIC := '0';  
+signal D0_input : STD_LOGIC := '0';  
+
+begin  
+
+initialise : D_FF  
+
+    Port map ( RESET  => '0',  
+               CLK => CLK,  
+               D => RESET,  
+               Q => RESET_D);  
+
+D0_input <= temp(0) when reset_d = '0' else '1';  
+
+D0 : D_FF Port map ( RESET => RESET,  
+                     CLK => CLK,  
+                     D => D0_input,  
+                     Q => temp(3));  
+
+D1 : D_FF Port map ( RESET => RESET,  
+                     CLK => CLK,  
+                     D => temp(3),  
+                     Q => temp(2)); 
+ 
+D2 : D_FF Port map ( RESET => RESET,  
+                     CLK => CLK,  
+                     D => temp(2),  
+                     Q => temp(1));  
+
+D3 : D_FF Port map ( RESET => RESET,  
+                     CLK => CLK,  
+                     D => temp(1),  
+                     Q => temp(0));  
+
+OUTPUT <= temp;  
+
+ end RingC;  
+----------------------------------------------------------------------------------------------------------------------------------------
+
+Test Bench Code
+---------------
+library IEEE;  
+use IEEE.STD_LOGIC_1164.ALL;   
+
+entity RingC_4bit_tb is  
+end;  
+
+architecture bench of RingC_4bit_tb is 
+ 
+-- Component Declaration for the Unit Under Test (UUT)  
+component RingC_4bit  
+
+   Port( CLK : in STD_LOGIC;  
+         RESET : in STD_LOGIC;  
+         OUTPUT : out STD_LOGIC_VECTOR (3 downto 0));  
+end component;  
+
+--Inputs  
+signal CLK : STD_LOGIC := '0';  
+signal RESET : STD_LOGIC := '1';  
+signal OUTPUT : STD_LOGIC_VECTOR (3 downto 0);  
+
+begin  
+
+-- Instantiate the Unit Under Test (UUT)  
+uut: RingC_4bit Port map( CLK => CLK,  
+                     RESET => RESET,  
+                     OUTPUT => OUTPUT);  
+
+process  
+begin
+
+    wait for 5ns;  
+    CLK <= not(CLK);  
+       
+end process; 
+ 
+process  
+begin
+  
+    RESET <= '1';  
+    wait for 70ns;
+         
+    RESET <= not(RESET);  
+       
+    wait;
+         
+end process;
+  
+end;  
+----------------------------------------------------------------------------------------------------------------------------------------
